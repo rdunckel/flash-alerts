@@ -9,7 +9,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
-import edu.wctc.android.flashalerts.util.Utils;
+import edu.wctc.android.flashalerts.util.FileUtils;
 
 public class MainActivty extends Activity implements OnClickListener {
 
@@ -28,9 +28,9 @@ public class MainActivty extends Activity implements OnClickListener {
 		cardNumber = 0;
 		clickNumber = 0;
 
-		questions = Utils.readLinesFromRawTextFile(getApplicationContext(),
+		questions = FileUtils.readLinesFromRawTextFile(getApplicationContext(),
 				R.raw.questions);
-		answers = Utils.readLinesFromRawTextFile(getApplicationContext(),
+		answers = FileUtils.readLinesFromRawTextFile(getApplicationContext(),
 				R.raw.answers);
 
 		textView = (TextView) findViewById(R.id.textView1);
@@ -46,20 +46,22 @@ public class MainActivty extends Activity implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		if (Utils.isEven(clickNumber)) {
-			textView.setText(questions[cardNumber]);
+		if (clickNumber == 0) {
+			cardNumber--;
+			advanceCard();
+			clickNumber++;
 		} else {
-			// textView.setText(answers[cardNumber]);
 			showDialog(answers[cardNumber]);
-
-			if (cardNumber < (questions.length - 1)) {
-				cardNumber++;
-			} else {
-				cardNumber = 0;
-			}
 		}
+	}
 
-		clickNumber++;
+	private void advanceCard() {
+		if (cardNumber < (questions.length - 1)) {
+			cardNumber++;
+		} else {
+			cardNumber = 0;
+		}
+		textView.setText(questions[cardNumber]);
 	}
 
 	private void showDialog(String message) {
@@ -67,11 +69,15 @@ public class MainActivty extends Activity implements OnClickListener {
 		LayoutInflater inflater = LayoutInflater.from(this);
 		final View addView = inflater.inflate(R.layout.dialog_answer, null);
 
-		new AlertDialog.Builder(this).setTitle("Answer").setView(addView)
-				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						// Ok - do nothing
-					}
-				}).setMessage(message).show();
+		new AlertDialog.Builder(this)
+				.setTitle("Answer")
+				.setView(addView)
+				.setPositiveButton("Next Question",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								advanceCard();
+							}
+						}).setMessage(message).show();
 	}
 }
